@@ -1,0 +1,39 @@
+# =============================================================================
+# RuFlo SaaS — Terraform Variables
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in the values.
+# NEVER commit terraform.tfvars — it may contain sensitive information.
+# =============================================================================
+
+# Project identity
+# project_name = "ruflo-saas"
+# environment  = "production"   # production | staging | dev
+# aws_region   = "us-east-1"
+
+# Networking
+# vpc_cidr = "10.0.0.0/16"
+
+# Database (RDS PostgreSQL)
+# db_instance_class = "db.t3.medium"    # Use db.t3.micro for dev
+# db_name           = "ruflo"
+# db_username       = "ruflo_admin"
+# enable_multi_az   = true              # Set false for dev to save cost
+
+# ECS Fargate
+# ecs_cpu           = 512               # CPU units (256, 512, 1024, 2048, 4096)
+# ecs_memory        = 1024              # Memory in MiB
+# ecs_desired_count = 3                 # Number of running tasks
+# container_port    = 4000              # Port the Express API listens on
+
+# Container image — REQUIRED, no default
+# backend_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/ruflo-api:latest"
+
+# Frontend S3 bucket — REQUIRED, must be globally unique
+# frontend_bucket_name = "ruflo-saas-frontend-production"
+
+# Custom domain and TLS (optional)
+# domain_name     = "app.ruflo.com"
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Observability
+# enable_vpc_flow_logs = false           # Enable for compliance/debugging

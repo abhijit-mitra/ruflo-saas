@@ -350,12 +350,13 @@ CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 - ✅ Frontend: 67/67 tests passing (1.85s)
 - ✅ 100% pass rate achieved
 
-### Phase 5: AWS Infrastructure
-- ⏳ CDK stack: VPC + Networking
-- ⏳ CDK stack: RDS PostgreSQL
-- ⏳ CDK stack: ECS Fargate
-- ⏳ CDK stack: ALB + CloudFront + S3
-- ⏳ CDK stack: Secrets Manager
+### Phase 5: AWS Infrastructure (Terraform)
+- ✅ Module: networking (VPC, 3 public + 3 private subnets, NAT, IGW, security groups)
+- ✅ Module: rds (PostgreSQL 15, Multi-AZ, encrypted, auto-scaling storage)
+- ✅ Module: ecs (Fargate cluster, task def with secrets injection, auto-scaling)
+- ✅ Module: alb (HTTPS listener, health checks, target group)
+- ✅ Module: cdn (CloudFront + S3 OAC, /api/* passthrough to ALB, SPA routing)
+- ✅ Module: secrets (Secrets Manager for JWT, OAuth, DB creds)
 
 ### Phase 6: CI/CD
 - ⏳ GitHub Actions: test on push
@@ -380,6 +381,7 @@ CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 | 2026-04-22 | Phase 3: Frontend tests (67 passing)     | ✅     |
 | 2026-04-22 | Phase 3: E2E specs written (28 tests)    | ✅     |
 | 2026-04-22 | Phase 4: All tests passing — 100%        | ✅     |
+| 2026-04-22 | Phase 5: Terraform infra (6 modules, 23 files) | ✅ |
 
 ---
 
@@ -397,5 +399,5 @@ _None yet._
 | 2026-04-22 | Zustand over Redux                                 | Lighter, less boilerplate for this scope        |
 | 2026-04-22 | Prisma over TypeORM                                | Better TypeScript integration, schema-first     |
 | 2026-04-22 | JWT (access+refresh) over sessions                 | Stateless API, scales with ECS                  |
-| 2026-04-22 | AWS CDK over Terraform                             | TypeScript consistency across the stack         |
+| 2026-04-22 | Terraform over AWS CDK                             | User preference; modular HCL, widely adopted    |
 | 2026-04-22 | Tailwind over styled-components                    | Faster iteration, Netflix-like dark theme       |
