@@ -359,10 +359,11 @@ CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 - ✅ Module: secrets (Secrets Manager for JWT, OAuth, DB creds)
 
 ### Phase 6: CI/CD
-- ⏳ GitHub Actions: test on push
-- ⏳ GitHub Actions: build + deploy on merge
-- ⏳ Docker images + ECR
-- ⏳ CloudFront invalidation
+- ✅ Dockerfiles: multi-stage builds for backend (Node.js) and frontend (Nginx)
+- ✅ CI workflow: backend tests + frontend tests + Terraform validate on every push/PR
+- ✅ Deploy workflow: ECR push → ECS deploy + S3 sync + CloudFront invalidation on main
+- ✅ PR workflow: test results summary comment on pull requests
+- ✅ Dependabot: weekly updates for npm, GitHub Actions, Terraform
 
 ### Phase 7: PR Creation
 - ⏳ Final PR with full summary
@@ -382,6 +383,7 @@ CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 | 2026-04-22 | Phase 3: E2E specs written (28 tests)    | ✅     |
 | 2026-04-22 | Phase 4: All tests passing — 100%        | ✅     |
 | 2026-04-22 | Phase 5: Terraform infra (6 modules, 23 files) | ✅ |
+| 2026-04-22 | Phase 6: CI/CD pipelines (4 workflows + Dockerfiles) | ✅ |
 
 ---
 
