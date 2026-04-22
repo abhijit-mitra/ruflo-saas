@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  local
+  google
+  microsoft
+}
+
+enum OrgRole {
+  owner
+  admin
+  member
+}
+
+model User {
+  id                  String               @id @default(uuid()) @db.Uuid
+  email               String               @unique
+  passwordHash        String?
+  name                String
+  avatarUrl           String?
+  emailVerified       Boolean              @default(false)
+  provider            AuthProvider          @default(local)
+  providerId          String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  memberships         OrgMembership[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  sentInvitations     Invitation[]         @relation("InvitedByUser")
+
+  @@map("users")
+}
+
+model Organization {
+  id        String          @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String          @unique
+  domain    String?
+  logoUrl   String?
+  settings  Json            @default("{}")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  memberships OrgMembership[]
+  invitations Invitation[]
+
+  @@map("organizations")
+}
+
+model OrgMembership {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @db.Uuid
+  orgId    String   @db.Uuid
+  role     OrgRole  @default(member)
+  joinedAt DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("org_memberships")
+}
+
+model Invitation {
+  id         String    @id @default(uuid()) @db.Uuid
+  orgId      String    @db.Uuid
+  email      String
+  role       OrgRole   @default(member)
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  invitedById String   @db.Uuid
+  createdAt  DateTime  @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("InvitedByUser", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
