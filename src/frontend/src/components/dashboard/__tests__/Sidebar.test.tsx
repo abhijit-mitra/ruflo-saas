@@ -10,21 +10,27 @@ vi.mock('@heroicons/react/24/outline', () => ({
   CreditCardIcon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="credit-icon" {...props} />,
   ChevronLeftIcon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="chevron-left" {...props} />,
   ChevronRightIcon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="chevron-right" {...props} />,
+  BuildingOffice2Icon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="building-icon" {...props} />,
+  DocumentCurrencyDollarIcon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="invoice-icon" {...props} />,
+  ClipboardDocumentListIcon: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="clipboard-icon" {...props} />,
 }));
 
 describe('Sidebar', () => {
   it('renders navigation items', () => {
     render(<Sidebar />);
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Projects')).toBeInTheDocument();
+    expect(screen.getByText('Invoices')).toBeInTheDocument();
+    expect(screen.getByText('Purchase Orders')).toBeInTheDocument();
     expect(screen.getByText('Members')).toBeInTheDocument();
     expect(screen.getByText('Settings')).toBeInTheDocument();
     expect(screen.getByText('Billing')).toBeInTheDocument();
   });
 
   it('highlights the active item', () => {
-    render(<Sidebar activeItem="/dashboard/members" />);
-    const membersButton = screen.getByText('Members').closest('button');
-    expect(membersButton).toHaveAttribute('aria-current', 'page');
+    render(<Sidebar activeItem="/projects" />);
+    const projectsButton = screen.getByText('Projects').closest('button');
+    expect(projectsButton).toHaveAttribute('aria-current', 'page');
 
     const dashboardButton = screen.getByText('Dashboard').closest('button');
     expect(dashboardButton).not.toHaveAttribute('aria-current');

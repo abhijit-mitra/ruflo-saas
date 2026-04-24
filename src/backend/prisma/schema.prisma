@@ -17,6 +17,78 @@ enum OrgRole {
   owner
   admin
   member
+  user
+}
+
+enum TenantType {
+  sales_rep
+  distributor
+  contractor
+}
+
+enum ProjectStatus {
+  draft
+  active
+  won
+  lost
+  completed
+}
+
+enum QuoteStatus {
+  draft
+  submitted
+  won
+  lost
+  revised
+}
+
+enum DocumentType {
+  rfq
+  engineering_design
+  specification
+  other
+}
+
+enum ChangeOrderType {
+  customer
+  vendor
+}
+
+enum ChangeOrderStatus {
+  draft
+  pending
+  approved
+  rejected
+}
+
+enum ChangeType {
+  added
+  removed
+  modified
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+  cancelled
+}
+
+enum PurchaseOrderStatus {
+  draft
+  sent
+  acknowledged
+  fulfilled
+  cancelled
+}
+
+enum SalesOrderStatus {
+  draft
+  confirmed
+  in_progress
+  fulfilled
+  cancelled
 }
 
 model User {
@@ -35,22 +107,32 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   sentInvitations     Invitation[]         @relation("InvitedByUser")
+  projects            Project[]            @relation("ProjectCreatedBy")
+  quotes              Quote[]              @relation("QuoteCreatedBy")
+  rfqDocuments        RFQDocument[]        @relation("DocumentUploadedBy")
+  changeOrdersCreated ChangeOrder[]        @relation("ChangeOrderCreatedBy")
+  changeOrdersApproved ChangeOrder[]       @relation("ChangeOrderApprovedBy")
+  invoices            Invoice[]            @relation("InvoiceCreatedBy")
+  purchaseOrders      PurchaseOrder[]      @relation("PurchaseOrderCreatedBy")
+  salesOrders         SalesOrder[]         @relation("SalesOrderCreatedBy")
 
   @@map("users")
 }
 
 model Organization {
-  id        String          @id @default(uuid()) @db.Uuid
-  name      String
-  slug      String          @unique
-  domain    String?
-  logoUrl   String?
-  settings  Json            @default("{}")
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id         String          @id @default(uuid()) @db.Uuid
+  name       String
+  slug       String          @unique
+  domain     String?
+  logoUrl    String?
+  tenantType TenantType?
+  settings   Json            @default("{}")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   memberships OrgMembership[]
   invitations Invitation[]
+  projects    Project[]
 
   @@map("organizations")
 }
@@ -110,4 +192,275 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
+}
+
+model Project {
+  id                String        @id @default(uuid()) @db.Uuid
+  name              String
+  description       String?
+  status            ProjectStatus @default(draft)
+  address           String?
+  city              String?
+  state             String?
+  architectName     String?
+  generalContractor String?
+  orgId             String        @db.Uuid
+  createdById       String        @db.Uuid
+  startDate         DateTime?
+  endDate           DateTime?
+  estimatedValue    Decimal?      @db.Decimal(12, 2)
+  deletedAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization   Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy      User           @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  quotes         Quote[]
+  rfqDocuments   RFQDocument[]
+  changeOrders   ChangeOrder[]
+  invoices       Invoice[]
+  purchaseOrders PurchaseOrder[]
+  salesOrders    SalesOrder[]
+
+  @@index([orgId])
+  @@index([status])
+  @@map("projects")
+}
+
+model Quote {
+  id          String      @id @default(uuid()) @db.Uuid
+  projectId   String      @db.Uuid
+  quoteNumber String      @unique
+  version     Int         @default(1)
+  status      QuoteStatus @default(draft)
+  subtotal    Decimal     @default(0) @db.Decimal(12, 2)
+  tax         Decimal     @default(0) @db.Decimal(12, 2)
+  discount    Decimal     @default(0) @db.Decimal(12, 2)
+  total       Decimal     @default(0) @db.Decimal(12, 2)
+  validUntil  DateTime?
+  submittedAt DateTime?
+  notes       String?
+  createdById String      @db.Uuid
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy    User             @relation("QuoteCreatedBy", fields: [createdById], references: [id])
+  lineItems    QuoteLineItem[]
+  changeOrders ChangeOrder[]
+  invoices     Invoice[]
+  salesOrders  SalesOrder[]
+
+  @@index([projectId])
+  @@map("quotes")
+}
+
+model QuoteLineItem {
+  id           String  @id @default(uuid()) @db.Uuid
+  quoteId      String  @db.Uuid
+  description  String
+  category     String?
+  quantity     Decimal @db.Decimal(12, 4)
+  unit         String?
+  unitPrice    Decimal @db.Decimal(12, 2)
+  totalPrice   Decimal @db.Decimal(12, 2)
+  manufacturer String?
+  partNumber   String?
+  notes        String?
+  sortOrder    Int     @default(0)
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId])
+  @@map("quote_line_items")
+}
+
+model RFQDocument {
+  id           String       @id @default(uuid()) @db.Uuid
+  projectId    String       @db.Uuid
+  fileName     String
+  fileUrl      String
+  fileSize     Int
+  mimeType     String
+  documentType DocumentType @default(other)
+  uploadedById String       @db.Uuid
+  createdAt    DateTime     @default(now())
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("DocumentUploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([projectId])
+  @@map("rfq_documents")
+}
+
+model ChangeOrder {
+  id                String            @id @default(uuid()) @db.Uuid
+  projectId         String            @db.Uuid
+  quoteId           String            @db.Uuid
+  changeOrderNumber String            @unique
+  type              ChangeOrderType
+  description       String
+  reason            String?
+  status            ChangeOrderStatus @default(draft)
+  originalAmount    Decimal           @db.Decimal(12, 2)
+  revisedAmount     Decimal           @db.Decimal(12, 2)
+  difference        Decimal           @db.Decimal(12, 2)
+  createdById       String            @db.Uuid
+  approvedById      String?           @db.Uuid
+  approvedAt        DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  project    Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quote      Quote                  @relation(fields: [quoteId], references: [id])
+  createdBy  User                   @relation("ChangeOrderCreatedBy", fields: [createdById], references: [id])
+  approvedBy User?                  @relation("ChangeOrderApprovedBy", fields: [approvedById], references: [id])
+  lineItems  ChangeOrderLineItem[]
+
+  @@index([projectId])
+  @@map("change_orders")
+}
+
+model ChangeOrderLineItem {
+  id                String     @id @default(uuid()) @db.Uuid
+  changeOrderId     String     @db.Uuid
+  description       String
+  changeType        ChangeType
+  originalQuantity  Decimal?   @db.Decimal(12, 4)
+  originalUnitPrice Decimal?   @db.Decimal(12, 2)
+  newQuantity       Decimal?   @db.Decimal(12, 4)
+  newUnitPrice      Decimal?   @db.Decimal(12, 2)
+  difference        Decimal    @db.Decimal(12, 2)
+
+  changeOrder ChangeOrder @relation(fields: [changeOrderId], references: [id], onDelete: Cascade)
+
+  @@index([changeOrderId])
+  @@map("change_order_line_items")
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  projectId     String        @db.Uuid
+  quoteId       String?       @db.Uuid
+  invoiceNumber String        @unique
+  status        InvoiceStatus @default(draft)
+  subtotal      Decimal       @default(0) @db.Decimal(12, 2)
+  tax           Decimal       @default(0) @db.Decimal(12, 2)
+  total         Decimal       @default(0) @db.Decimal(12, 2)
+  amountPaid    Decimal       @default(0) @db.Decimal(12, 2)
+  amountDue     Decimal       @default(0) @db.Decimal(12, 2)
+  dueDate       DateTime?
+  sentAt        DateTime?
+  paidAt        DateTime?
+  terms         String?
+  notes         String?
+  createdById   String        @db.Uuid
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quote     Quote?            @relation(fields: [quoteId], references: [id])
+  createdBy User              @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  lineItems InvoiceLineItem[]
+
+  @@index([projectId])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id         String  @id @default(uuid()) @db.Uuid
+  invoiceId  String  @db.Uuid
+  description String
+  quantity   Decimal @db.Decimal(12, 4)
+  unit       String?
+  unitPrice  Decimal @db.Decimal(12, 2)
+  totalPrice Decimal @db.Decimal(12, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+model PurchaseOrder {
+  id                   String              @id @default(uuid()) @db.Uuid
+  projectId            String              @db.Uuid
+  poNumber             String              @unique
+  vendorName           String
+  vendorEmail          String?
+  vendorAddress        String?
+  status               PurchaseOrderStatus @default(draft)
+  subtotal             Decimal             @default(0) @db.Decimal(12, 2)
+  tax                  Decimal             @default(0) @db.Decimal(12, 2)
+  total                Decimal             @default(0) @db.Decimal(12, 2)
+  expectedDeliveryDate DateTime?
+  notes                String?
+  createdById          String              @db.Uuid
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  project   Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User                     @relation("PurchaseOrderCreatedBy", fields: [createdById], references: [id])
+  lineItems PurchaseOrderLineItem[]
+
+  @@index([projectId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLineItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  purchaseOrderId String  @db.Uuid
+  description     String
+  quantity        Decimal @db.Decimal(12, 4)
+  unit            String?
+  unitPrice       Decimal @db.Decimal(12, 2)
+  totalPrice      Decimal @db.Decimal(12, 2)
+  manufacturer    String?
+  partNumber      String?
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_line_items")
+}
+
+model SalesOrder {
+  id              String           @id @default(uuid()) @db.Uuid
+  projectId       String           @db.Uuid
+  quoteId         String?          @db.Uuid
+  soNumber        String           @unique
+  customerName    String
+  customerEmail   String?
+  customerAddress String?
+  status          SalesOrderStatus @default(draft)
+  subtotal        Decimal          @default(0) @db.Decimal(12, 2)
+  tax             Decimal          @default(0) @db.Decimal(12, 2)
+  total           Decimal          @default(0) @db.Decimal(12, 2)
+  notes           String?
+  createdById     String           @db.Uuid
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  project   Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quote     Quote?               @relation(fields: [quoteId], references: [id])
+  createdBy User                 @relation("SalesOrderCreatedBy", fields: [createdById], references: [id])
+  lineItems SalesOrderLineItem[]
+
+  @@index([projectId])
+  @@map("sales_orders")
+}
+
+model SalesOrderLineItem {
+  id           String  @id @default(uuid()) @db.Uuid
+  salesOrderId String  @db.Uuid
+  description  String
+  quantity     Decimal @db.Decimal(12, 4)
+  unit         String?
+  unitPrice    Decimal @db.Decimal(12, 2)
+  totalPrice   Decimal @db.Decimal(12, 2)
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  @@index([salesOrderId])
+  @@map("sales_order_line_items")
 }

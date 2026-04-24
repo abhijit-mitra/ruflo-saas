@@ -7,6 +7,9 @@ import {
   CreditCardIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  BuildingOffice2Icon,
+  DocumentCurrencyDollarIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -17,6 +20,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', icon: HomeIcon, href: '/dashboard' },
+  { name: 'Projects', icon: BuildingOffice2Icon, href: '/projects' },
+  { name: 'Invoices', icon: DocumentCurrencyDollarIcon, href: '/projects' },
+  { name: 'Purchase Orders', icon: ClipboardDocumentListIcon, href: '/projects' },
   { name: 'Members', icon: UsersIcon, href: '/dashboard/members' },
   { name: 'Settings', icon: Cog6ToothIcon, href: '/dashboard/settings' },
   { name: 'Billing', icon: CreditCardIcon, href: '/dashboard/billing' },

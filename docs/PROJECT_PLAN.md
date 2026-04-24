@@ -384,12 +384,41 @@ CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 | 2026-04-22 | Phase 4: All tests passing — 100%        | ✅     |
 | 2026-04-22 | Phase 5: Terraform infra (6 modules, 23 files) | ✅ |
 | 2026-04-22 | Phase 6: CI/CD pipelines (4 workflows + Dockerfiles) | ✅ |
+| 2026-04-22 | Phase 7: Final PR created                          | ✅     |
+| 2026-04-24 | Construction domain: backend (22 new files)        | ✅     |
+| 2026-04-24 | Construction domain: frontend (22 new files)       | ✅     |
+| 2026-04-24 | Construction domain: tests (14 new files, 270 total) | ✅   |
+| 2026-04-24 | AWS Secrets Manager integration                    | ✅     |
+| 2026-04-24 | Domain schema pushed to RDS                        | ✅     |
 
 ---
 
 ## Known Issues
 
 _None yet._
+
+---
+
+## Domain: Construction B2B Platform
+
+### Tenant Types
+- Sales Rep, Distributor, Contractor
+- Roles per tenant: Owner, Admin, User
+
+### Core Workflow
+1. Customer uploads RFQ / Engineering Design document
+2. Create project → create multiple quotes (bidding)
+3. Submit quotes → Win or Lose
+4. On win → Project management begins
+5. Change Orders (customer/vendor) track diffs from original quote
+6. Create Invoices, Purchase Orders, Sales Orders
+
+### Domain Models (13 tables)
+Project, Quote, QuoteLineItem, RFQDocument, ChangeOrder, ChangeOrderLineItem, Invoice, InvoiceLineItem, PurchaseOrder, PurchaseOrderLineItem, SalesOrder, SalesOrderLineItem
+
+### Security
+- DB credentials loaded from AWS Secrets Manager at runtime
+- No hardcoded secrets in code or .env
 
 ---
 

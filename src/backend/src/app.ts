@@ -8,6 +8,13 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import orgRoutes from './routes/org.routes';
+import projectRoutes from './routes/project.routes';
+import quoteRoutes from './routes/quote.routes';
+import documentRoutes from './routes/document.routes';
+import changeOrderRoutes from './routes/change-order.routes';
+import invoiceRoutes from './routes/invoice.routes';
+import purchaseOrderRoutes from './routes/purchase-order.routes';
+import salesOrderRoutes from './routes/sales-order.routes';
 
 // Initialize passport strategies
 import './strategies/local.strategy';
@@ -70,6 +77,13 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orgs', orgRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/projects/:projectId/quotes', quoteRoutes);
+app.use('/api/projects/:projectId/documents', documentRoutes);
+app.use('/api/projects/:projectId/change-orders', changeOrderRoutes);
+app.use('/api/projects/:projectId/invoices', invoiceRoutes);
+app.use('/api/projects/:projectId/purchase-orders', purchaseOrderRoutes);
+app.use('/api/projects/:projectId/sales-orders', salesOrderRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

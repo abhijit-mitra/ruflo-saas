@@ -32,16 +32,16 @@ describe('Dashboard page', () => {
     render(<Dashboard />);
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(
-      screen.getByText('Overview of your workflows, deployments, and infrastructure.'),
+      screen.getByText('Overview of your projects, quotes, invoices, and purchase orders.'),
     ).toBeInTheDocument();
   });
 
   it('renders ContentGrid with sections', () => {
     render(<Dashboard />);
     expect(screen.getByTestId('content-grid')).toBeInTheDocument();
-    expect(screen.getByText('Active Workflows')).toBeInTheDocument();
-    expect(screen.getByText('Recent Deployments')).toBeInTheDocument();
-    expect(screen.getByText('Team Activity')).toBeInTheDocument();
-    expect(screen.getByText('Infrastructure Health')).toBeInTheDocument();
+    expect(screen.getByText('Recent Projects')).toBeInTheDocument();
+    expect(screen.getByText('Pending Quotes')).toBeInTheDocument();
+    expect(screen.getByText('Overdue Invoices')).toBeInTheDocument();
+    expect(screen.getByText('Active Purchase Orders')).toBeInTheDocument();
   });
 });

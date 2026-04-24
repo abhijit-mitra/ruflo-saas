@@ -114,6 +114,36 @@ vi.mock('../../src/services/email.service', () => ({
   },
 }));
 
+vi.mock('../../src/services/project.service', () => ({
+  projectService: { create: vi.fn(), list: vi.fn(), getById: vi.fn(), update: vi.fn(), softDelete: vi.fn() },
+  ProjectService: vi.fn(),
+}));
+vi.mock('../../src/services/quote.service', () => ({
+  quoteService: { create: vi.fn(), listByProject: vi.fn(), getById: vi.fn(), update: vi.fn(), submit: vi.fn(), win: vi.fn(), lose: vi.fn(), revise: vi.fn() },
+  QuoteService: vi.fn(),
+}));
+vi.mock('../../src/services/document.service', () => ({
+  documentService: { create: vi.fn(), listByProject: vi.fn(), delete: vi.fn() },
+  DocumentService: vi.fn(),
+}));
+vi.mock('../../src/services/change-order.service', () => ({
+  changeOrderService: { create: vi.fn(), listByProject: vi.fn(), getById: vi.fn(), update: vi.fn(), approve: vi.fn(), reject: vi.fn() },
+  ChangeOrderService: vi.fn(),
+}));
+vi.mock('../../src/services/invoice.service', () => ({
+  invoiceService: { create: vi.fn(), listByProject: vi.fn(), getById: vi.fn(), update: vi.fn(), send: vi.fn(), recordPayment: vi.fn() },
+  InvoiceService: vi.fn(),
+}));
+vi.mock('../../src/services/purchase-order.service', () => ({
+  purchaseOrderService: { create: vi.fn(), listByProject: vi.fn(), getById: vi.fn(), update: vi.fn(), send: vi.fn() },
+  PurchaseOrderService: vi.fn(),
+}));
+vi.mock('../../src/services/sales-order.service', () => ({
+  salesOrderService: { create: vi.fn(), listByProject: vi.fn(), getById: vi.fn(), update: vi.fn(), confirm: vi.fn() },
+  SalesOrderService: vi.fn(),
+}));
+vi.mock('../../src/utils/numbering', () => ({ generateNumber: vi.fn(() => 'NUM-2026-0001') }));
+
 import app from '../../src/app';
 import { orgService } from '../../src/services/org.service';
 
