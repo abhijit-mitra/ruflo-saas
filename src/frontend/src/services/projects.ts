@@ -6,17 +6,17 @@ export async function getProjects(params?: {
   search?: string;
 }): Promise<Project[]> {
   const { data } = await api.get('/projects', { params });
-  return data;
+  return data.data ?? data;
 }
 
 export async function getProject(id: string): Promise<Project> {
   const { data } = await api.get(`/projects/${id}`);
-  return data;
+  return data.data ?? data;
 }
 
 export async function createProject(req: CreateProjectRequest): Promise<Project> {
   const { data } = await api.post('/projects', req);
-  return data;
+  return data.data ?? data;
 }
 
 export async function updateProject(
@@ -24,7 +24,7 @@ export async function updateProject(
   req: UpdateProjectRequest,
 ): Promise<Project> {
   const { data } = await api.patch(`/projects/${id}`, req);
-  return data;
+  return data.data ?? data;
 }
 
 export async function deleteProject(id: string): Promise<void> {

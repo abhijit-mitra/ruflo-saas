@@ -83,7 +83,7 @@ export const createProjectSchema = z.object({
   state: z.string().max(100).optional(),
   architectName: z.string().max(200).optional(),
   generalContractor: z.string().max(200).optional(),
-  orgId: z.string().uuid(),
+  orgId: z.string().uuid().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   estimatedValue: z.number().min(0).optional(),

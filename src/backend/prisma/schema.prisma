@@ -207,7 +207,7 @@ model Project {
   state             String?
   architectName     String?
   generalContractor String?
-  orgId             String        @db.Uuid
+  orgId             String?       @db.Uuid
   createdById       String        @db.Uuid
   startDate         DateTime?
   endDate           DateTime?
@@ -216,7 +216,7 @@ model Project {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  organization   Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  organization   Organization?  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   createdBy      User           @relation("ProjectCreatedBy", fields: [createdById], references: [id])
   quotes         Quote[]
   rfqDocuments   RFQDocument[]

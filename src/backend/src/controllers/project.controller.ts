@@ -16,13 +16,14 @@ export async function createProjectHandler(req: Request, res: Response, next: Ne
 
 export async function listProjectsHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const orgId = req.query.orgId as string;
-    if (!orgId) throw new AppError(400, 'BAD_REQUEST', 'orgId query parameter is required');
+    const userId = req.user?.userId;
+    if (!userId) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
+    const orgId = req.query.orgId as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const status = req.query.status as string | undefined;
 
-    const result = await projectService.list(orgId, page, limit, status);
+    const result = await projectService.list(orgId, page, limit, status, userId);
     res.status(200).json({
       data: result.projects,
       meta: { page: result.page, limit: result.limit, total: result.total },

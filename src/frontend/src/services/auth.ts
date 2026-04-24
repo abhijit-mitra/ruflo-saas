@@ -9,13 +9,13 @@ import type {
 } from '@/types';
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
-  const response = await api.post<AuthResponse>('/auth/login', data);
-  return response.data;
+  const response = await api.post<{ data: AuthResponse }>('/auth/login', data);
+  return response.data.data;
 }
 
 export async function signup(data: SignupRequest): Promise<AuthResponse> {
-  const response = await api.post<AuthResponse>('/auth/signup', data);
-  return response.data;
+  const response = await api.post<{ data: AuthResponse }>('/auth/signup', data);
+  return response.data.data;
 }
 
 export async function logout(): Promise<void> {

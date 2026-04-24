@@ -16,7 +16,7 @@ export class ProjectService {
         state: data.state,
         architectName: data.architectName,
         generalContractor: data.generalContractor,
-        orgId: data.orgId,
+        orgId: data.orgId || null,
         createdById: userId,
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
@@ -26,9 +26,11 @@ export class ProjectService {
     return project;
   }
 
-  async list(orgId: string, page = 1, limit = 20, status?: string) {
+  async list(orgId?: string, page = 1, limit = 20, status?: string, userId?: string) {
     const skip = (page - 1) * limit;
-    const where: any = { orgId, deletedAt: null };
+    const where: any = { deletedAt: null };
+    if (orgId) where.orgId = orgId;
+    else if (userId) where.createdById = userId;
     if (status) where.status = status as ProjectStatus;
 
     const [projects, total] = await Promise.all([
