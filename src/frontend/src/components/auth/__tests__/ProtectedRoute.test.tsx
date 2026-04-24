@@ -46,15 +46,15 @@ describe('ProtectedRoute', () => {
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
   });
 
-  it('shows loading spinner when isLoading is true', () => {
+  it('does not show loading spinner (auth state is resolved synchronously)', () => {
     mockUseAuthStore.mockReturnValue({
       isAuthenticated: false,
-      isLoading: true,
     });
 
     renderProtectedRoute();
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    // Not authenticated, so content should not render (redirects to login)
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
   });
 });

@@ -17,13 +17,12 @@ describe('auth service', () => {
 
   describe('login', () => {
     it('calls POST /auth/login with email and password', async () => {
-      const mockResponse = {
-        data: {
-          user: { id: '1', email: 'test@company.com', name: 'Test' },
-          accessToken: 'token-123',
-          refreshToken: 'refresh-123',
-        },
+      const innerData = {
+        user: { id: '1', email: 'test@company.com', name: 'Test' },
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
       };
+      const mockResponse = { data: { data: innerData } };
       mockPost.mockResolvedValueOnce(mockResponse);
 
       const result = await login({ email: 'test@company.com', password: 'password123' });
@@ -32,7 +31,7 @@ describe('auth service', () => {
         email: 'test@company.com',
         password: 'password123',
       });
-      expect(result).toEqual(mockResponse.data);
+      expect(result).toEqual(innerData);
     });
   });
 
@@ -44,19 +43,18 @@ describe('auth service', () => {
         password: 'password123',
         companyName: 'Test Corp',
       };
-      const mockResponse = {
-        data: {
-          user: { id: '1', email: 'test@company.com', name: 'Test User' },
-          accessToken: 'token-123',
-          refreshToken: 'refresh-123',
-        },
+      const innerData = {
+        user: { id: '1', email: 'test@company.com', name: 'Test User' },
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
       };
+      const mockResponse = { data: { data: innerData } };
       mockPost.mockResolvedValueOnce(mockResponse);
 
       const result = await signup(signupData);
 
       expect(mockPost).toHaveBeenCalledWith('/auth/signup', signupData);
-      expect(result).toEqual(mockResponse.data);
+      expect(result).toEqual(innerData);
     });
   });
 
