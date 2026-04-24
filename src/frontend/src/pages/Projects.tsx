@@ -4,6 +4,8 @@ import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import Button from '@/components/ui/Button';
 import ProjectCard from '@/components/projects/ProjectCard';
+import CreateProjectWizard from '@/components/projects/CreateProjectWizard';
+import type { WizardData } from '@/components/projects/CreateProjectWizard';
 import { useProjectStore } from '@/store/projectStore';
 import * as projectsApi from '@/services/projects';
 import type { ProjectStatus } from '@/types/domain';
@@ -22,6 +24,24 @@ export default function Projects() {
   const { projects, setProjects, isLoading, setLoading } = useProjectStore();
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  const handleCreateProject = async (data: WizardData) => {
+    const address = [data.addressLine1, data.addressLine2, data.city, data.state, data.zip, data.country]
+      .filter(Boolean)
+      .join(', ');
+    const totalValue = data.opportunities.reduce(
+      (sum, o) => sum + (parseFloat(o.estimatedValue) || 0),
+      0,
+    );
+    await projectsApi.createProject({
+      name: data.projectName,
+      address: address || undefined,
+      description: data.details || undefined,
+      estimatedValue: totalValue || undefined,
+    });
+    loadProjects();
+  };
 
   const loadProjects = useCallback(async () => {
     setLoading(true);
@@ -59,7 +79,7 @@ export default function Projects() {
               Manage your construction projects, quotes, and orders.
             </p>
           </div>
-          <Button onClick={() => navigate('/projects/new')}>
+          <Button onClick={() => setWizardOpen(true)}>
             <PlusIcon className="h-4 w-4 mr-1.5" />
             New Project
           </Button>
@@ -122,7 +142,7 @@ export default function Projects() {
                 : 'No projects yet. Create your first project to get started.'}
             </p>
             {!search && statusFilter === 'all' && (
-              <Button onClick={() => navigate('/projects/new')}>
+              <Button onClick={() => setWizardOpen(true)}>
                 <PlusIcon className="h-4 w-4 mr-1.5" />
                 New Project
               </Button>
@@ -130,6 +150,11 @@ export default function Projects() {
           </div>
         )}
       </div>
+      <CreateProjectWizard
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onSubmit={handleCreateProject}
+      />
     </DashboardLayout>
   );
 }

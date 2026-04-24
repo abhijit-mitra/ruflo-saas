@@ -115,6 +115,9 @@ model User {
   invoices            Invoice[]            @relation("InvoiceCreatedBy")
   purchaseOrders      PurchaseOrder[]      @relation("PurchaseOrderCreatedBy")
   salesOrders         SalesOrder[]         @relation("SalesOrderCreatedBy")
+  foldersCreated      ProjectFolder[]      @relation("folderCreator")
+  filesUploaded       ProjectFile[]        @relation("fileUploader")
+  bomsCreated         BillOfMaterials[]    @relation("bomCreator")
 
   @@map("users")
 }
@@ -221,6 +224,9 @@ model Project {
   invoices       Invoice[]
   purchaseOrders PurchaseOrder[]
   salesOrders    SalesOrder[]
+  folders        ProjectFolder[]
+  files          ProjectFile[]
+  boms           BillOfMaterials[]
 
   @@index([orgId])
   @@index([status])
@@ -463,4 +469,119 @@ model SalesOrderLineItem {
 
   @@index([salesOrderId])
   @@map("sales_order_line_items")
+}
+
+// ---- File Management ----
+
+model ProjectFolder {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  parentId    String?   @db.Uuid
+  name        String
+  createdById String    @db.Uuid
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent      ProjectFolder? @relation("FolderTree", fields: [parentId], references: [id])
+  children    ProjectFolder[] @relation("FolderTree")
+  createdBy   User           @relation("folderCreator", fields: [createdById], references: [id])
+  files       ProjectFile[]
+
+  @@index([projectId])
+  @@index([parentId])
+  @@map("project_folders")
+}
+
+model ProjectFile {
+  id           String    @id @default(uuid()) @db.Uuid
+  projectId    String    @db.Uuid
+  folderId     String?   @db.Uuid
+  fileName     String
+  fileUrl      String
+  fileSize     Int
+  mimeType     String
+  uploadedById String    @db.Uuid
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  folder       ProjectFolder? @relation(fields: [folderId], references: [id])
+  uploadedBy   User           @relation("fileUploader", fields: [uploadedById], references: [id])
+  bomFile      BillOfMaterials? @relation("bomSourceFile")
+
+  @@index([projectId])
+  @@index([folderId])
+  @@map("project_files")
+}
+
+// ---- Bill of Materials ----
+
+enum BOMPriority {
+  primary
+  secondary
+}
+
+model BillOfMaterials {
+  id              String      @id @default(uuid()) @db.Uuid
+  projectId       String      @db.Uuid
+  name            String
+  bomNumber       String      @unique
+  branchLocation  String?
+  opportunityId   String?
+  isPrimary       Boolean     @default(false)
+  priority        BOMPriority @default(primary)
+
+  primaryCompany    String?
+  primaryContact    String?
+  outsideSales      String?
+
+  sourceFileId    String?   @unique @db.Uuid
+  status          String    @default("draft")
+  createdById     String    @db.Uuid
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy       User           @relation("bomCreator", fields: [createdById], references: [id])
+  sourceFile      ProjectFile?   @relation("bomSourceFile", fields: [sourceFileId], references: [id])
+  products        BOMProduct[]
+  secondaryCustomers BOMSecondaryCustomer[]
+
+  @@index([projectId])
+  @@map("bill_of_materials")
+}
+
+model BOMProduct {
+  id            String    @id @default(uuid()) @db.Uuid
+  bomId         String    @db.Uuid
+  type          String?
+  manufacturer  String?
+  modelNumber   String?
+  quantity      Int       @default(1)
+  description   String?
+  cost          Float     @default(0)
+  discount      Float     @default(0)
+  margin        Float     @default(0)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bom           BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+
+  @@index([bomId])
+  @@map("bom_products")
+}
+
+model BOMSecondaryCustomer {
+  id          String    @id @default(uuid()) @db.Uuid
+  bomId       String    @db.Uuid
+  company     String
+  contact     String?
+  createdAt   DateTime  @default(now())
+
+  bom         BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+
+  @@index([bomId])
+  @@map("bom_secondary_customers")
 }

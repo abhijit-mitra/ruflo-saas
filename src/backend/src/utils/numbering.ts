@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type NumberPrefix = 'QUO' | 'INV' | 'PO' | 'SO' | 'CO';
+type NumberPrefix = 'QUO' | 'INV' | 'PO' | 'SO' | 'CO' | 'BOM';
 
 const tableMap: Record<NumberPrefix, { model: string; field: string }> = {
   QUO: { model: 'quote', field: 'quoteNumber' },
@@ -10,6 +10,7 @@ const tableMap: Record<NumberPrefix, { model: string; field: string }> = {
   PO: { model: 'purchaseOrder', field: 'poNumber' },
   SO: { model: 'salesOrder', field: 'soNumber' },
   CO: { model: 'changeOrder', field: 'changeOrderNumber' },
+  BOM: { model: 'billOfMaterials', field: 'bomNumber' },
 };
 
 export async function generateNumber(prefix: NumberPrefix): Promise<string> {

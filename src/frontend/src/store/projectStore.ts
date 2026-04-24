@@ -7,7 +7,9 @@ export type ProjectTab =
   | 'change-orders'
   | 'invoices'
   | 'purchase-orders'
-  | 'sales-orders';
+  | 'sales-orders'
+  | 'files'
+  | 'bom';
 
 interface ProjectState {
   projects: Project[];

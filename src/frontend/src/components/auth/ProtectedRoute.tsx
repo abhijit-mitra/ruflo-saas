@@ -7,18 +7,19 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const checking = false; // Auth state is managed by login/signup — no re-check on navigation
 
-  if (isLoading) {
+  if (checking) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center bg-surface"
+        className="flex min-h-screen items-center justify-center bg-[#141414]"
         role="status"
         aria-label="Loading"
       >
         <div className="flex flex-col items-center gap-4">
           <svg
-            className="h-10 w-10 animate-spin text-primary"
+            className="h-10 w-10 animate-spin text-[#E50914]"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -38,7 +39,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <p className="text-text-secondary text-sm">Loading...</p>
+          <p className="text-gray-400 text-sm">Loading...</p>
         </div>
       </div>
     );

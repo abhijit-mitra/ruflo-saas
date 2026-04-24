@@ -279,3 +279,83 @@ export const updateSalesOrderSchema = z.object({
 
 export type CreateSalesOrderInput = z.infer<typeof createSalesOrderSchema>;
 export type UpdateSalesOrderInput = z.infer<typeof updateSalesOrderSchema>;
+
+// ---- File Management ----
+
+export const createFolderSchema = z.object({
+  name: z.string().min(1, 'Folder name is required').max(255),
+  parentId: z.string().uuid().optional(),
+});
+
+export const renameFolderSchema = z.object({
+  name: z.string().min(1, 'Folder name is required').max(255),
+});
+
+export const moveFileSchema = z.object({
+  folderId: z.string().uuid().nullable(),
+});
+
+export type CreateFolderInput = z.infer<typeof createFolderSchema>;
+export type RenameFolderInput = z.infer<typeof renameFolderSchema>;
+export type MoveFileInput = z.infer<typeof moveFileSchema>;
+
+// ---- Bill of Materials ----
+
+const secondaryCustomerSchema = z.object({
+  company: z.string().min(1).max(200),
+  contact: z.string().max(200).optional(),
+});
+
+export const createBOMSchema = z.object({
+  name: z.string().min(1).max(200),
+  branchLocation: z.string().max(500).optional(),
+  opportunityId: z.string().max(200).optional(),
+  isPrimary: z.boolean().optional(),
+  priority: z.enum(['primary', 'secondary']).optional(),
+  primaryCompany: z.string().max(200).optional(),
+  primaryContact: z.string().max(200).optional(),
+  outsideSales: z.string().max(200).optional(),
+  secondaryCustomers: z.array(secondaryCustomerSchema).optional(),
+});
+
+export const updateBOMSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  branchLocation: z.string().max(500).optional().nullable(),
+  opportunityId: z.string().max(200).optional().nullable(),
+  isPrimary: z.boolean().optional(),
+  priority: z.enum(['primary', 'secondary']).optional(),
+  primaryCompany: z.string().max(200).optional().nullable(),
+  primaryContact: z.string().max(200).optional().nullable(),
+  outsideSales: z.string().max(200).optional().nullable(),
+  status: z.enum(['draft', 'active', 'finalized']).optional(),
+  secondaryCustomers: z.array(secondaryCustomerSchema).optional(),
+});
+
+export const createBOMProductSchema = z.object({
+  type: z.string().max(100).optional(),
+  manufacturer: z.string().max(200).optional(),
+  modelNumber: z.string().max(200).optional(),
+  quantity: z.number().int().min(0).optional(),
+  description: z.string().max(2000).optional(),
+  cost: z.number().min(0).optional(),
+  discount: z.number().min(0).max(100).optional(),
+  margin: z.number().min(0).max(100).optional(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
+export const updateBOMProductSchema = z.object({
+  type: z.string().max(100).optional().nullable(),
+  manufacturer: z.string().max(200).optional().nullable(),
+  modelNumber: z.string().max(200).optional().nullable(),
+  quantity: z.number().int().min(0).optional(),
+  description: z.string().max(2000).optional().nullable(),
+  cost: z.number().min(0).optional(),
+  discount: z.number().min(0).max(100).optional(),
+  margin: z.number().min(0).max(100).optional(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
+export type CreateBOMInput = z.infer<typeof createBOMSchema>;
+export type UpdateBOMInput = z.infer<typeof updateBOMSchema>;
+export type CreateBOMProductInput = z.infer<typeof createBOMProductSchema>;
+export type UpdateBOMProductInput = z.infer<typeof updateBOMProductSchema>;

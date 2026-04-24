@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { StarIcon } from '@heroicons/react/24/solid';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import StatusBadge from '@/components/projects/StatusBadge';
+import FileManager from '@/components/projects/FileManager';
+import CreateBOMModal from '@/components/projects/CreateBOMModal';
 import { useProjectStore, type ProjectTab } from '@/store/projectStore';
 import * as projectsApi from '@/services/projects';
+import * as bomApi from '@/services/bom';
 import type {
   Project,
   Quote,
@@ -15,11 +19,15 @@ import type {
   Invoice,
   PurchaseOrder,
   SalesOrder,
+  BillOfMaterials,
+  CreateBOMRequest,
 } from '@/types/domain';
 
 const tabs: { key: ProjectTab; label: string }[] = [
   { key: 'quotes', label: 'Quotes' },
   { key: 'documents', label: 'Documents' },
+  { key: 'files', label: 'Files' },
+  { key: 'bom', label: 'Bill of Materials' },
   { key: 'change-orders', label: 'Change Orders' },
   { key: 'invoices', label: 'Invoices' },
   { key: 'purchase-orders', label: 'Purchase Orders' },
@@ -42,14 +50,124 @@ function formatDate(dateStr: string): string {
   });
 }
 
+const bomStatusColors: Record<string, string> = {
+  draft: 'bg-gray-600 text-gray-200',
+  active: 'bg-green-900/50 text-green-400',
+  finalized: 'bg-blue-900/50 text-blue-400',
+};
+
+// BOM List sub-component
+function BOMListContent({
+  projectId,
+  projectName,
+  navigate,
+}: {
+  projectId: string;
+  projectName: string;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const [boms, setBoms] = useState<BillOfMaterials[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const loadBoms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await bomApi.getBOMs(projectId);
+      setBoms(data);
+    } catch {
+      setBoms([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    loadBoms();
+  }, [loadBoms]);
+
+  const handleCreateBOM = async (requests: CreateBOMRequest[], file?: File) => {
+    for (const req of requests) {
+      const created = await bomApi.createBOM(projectId, req);
+      if (file) {
+        await bomApi.importFile(projectId, created.id, file);
+      }
+    }
+    loadBoms();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-400">{boms.length} BOM{boms.length !== 1 ? 's' : ''}</p>
+        <Button size="sm" onClick={() => setShowCreateModal(true)}>
+          <PlusIcon className="h-4 w-4 mr-1" /> Create BOM
+        </Button>
+      </div>
+
+      {boms.length === 0 ? (
+        <div className="py-12 text-center">
+          <p className="text-text-muted text-sm mb-4">No bills of materials yet.</p>
+          <Button size="sm" onClick={() => setShowCreateModal(true)}>
+            <PlusIcon className="h-4 w-4 mr-1" /> Create BOM
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {boms.map((bom) => (
+            <div
+              key={bom.id}
+              onClick={() => navigate(`/projects/${projectId}/boms/${bom.id}`)}
+              className="rounded-lg border border-gray-700 bg-[#0f0f0f] p-4 hover:border-gray-500 cursor-pointer transition-colors"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="text-sm font-semibold text-white truncate flex-1 mr-2">{bom.name}</h4>
+                {bom.isPrimary && <StarIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />}
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-gray-800 text-gray-400">
+                  {bom.bomNumber}
+                </span>
+                <span className={`px-1.5 py-0.5 rounded text-xs font-medium capitalize ${bomStatusColors[bom.status] ?? ''}`}>
+                  {bom.status}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                {bom.productCount ?? 0} product{(bom.productCount ?? 0) !== 1 ? 's' : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <CreateBOMModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateBOM}
+        projectName={projectName}
+      />
+    </>
+  );
+}
+
 // Placeholder tab content - data will come from API
 function TabContent({
   tab,
   projectId,
+  projectName,
   navigate,
 }: {
   tab: ProjectTab;
   projectId: string;
+  projectName: string;
   navigate: ReturnType<typeof useNavigate>;
 }) {
   const [_quotes] = useState<Quote[]>([]);
@@ -76,6 +194,10 @@ function TabContent({
       return emptyState('quotes', `/projects/${projectId}/quotes/new`);
     case 'documents':
       return emptyState('documents');
+    case 'files':
+      return <FileManager projectId={projectId} />;
+    case 'bom':
+      return <BOMListContent projectId={projectId} projectName={projectName} navigate={navigate} />;
     case 'change-orders':
       return emptyState('change orders');
     case 'invoices':
@@ -207,7 +329,7 @@ export default function ProjectDetail() {
 
         {/* Tab Content */}
         <Card padding="lg">
-          <TabContent tab={activeTab} projectId={id!} navigate={navigate} />
+          <TabContent tab={activeTab} projectId={id!} projectName={project.name} navigate={navigate} />
         </Card>
       </div>
     </DashboardLayout>

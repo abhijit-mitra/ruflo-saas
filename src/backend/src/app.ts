@@ -15,6 +15,8 @@ import changeOrderRoutes from './routes/change-order.routes';
 import invoiceRoutes from './routes/invoice.routes';
 import purchaseOrderRoutes from './routes/purchase-order.routes';
 import salesOrderRoutes from './routes/sales-order.routes';
+import fileManagementRoutes from './routes/file-management.routes';
+import bomRoutes from './routes/bom.routes';
 
 // Initialize passport strategies
 import './strategies/local.strategy';
@@ -49,7 +51,7 @@ app.use(limiter);
 // Auth-specific stricter rate limit
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: process.env.NODE_ENV === 'production' ? 20 : 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -84,6 +86,8 @@ app.use('/api/projects/:projectId/change-orders', changeOrderRoutes);
 app.use('/api/projects/:projectId/invoices', invoiceRoutes);
 app.use('/api/projects/:projectId/purchase-orders', purchaseOrderRoutes);
 app.use('/api/projects/:projectId/sales-orders', salesOrderRoutes);
+app.use('/api/projects/:projectId/files', fileManagementRoutes);
+app.use('/api/projects/:projectId/boms', bomRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

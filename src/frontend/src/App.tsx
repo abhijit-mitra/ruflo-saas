@@ -5,6 +5,7 @@ import ForgotPasswordPage from '@/pages/ForgotPassword';
 import Dashboard from '@/pages/Dashboard';
 import Projects from '@/pages/Projects';
 import ProjectDetail from '@/pages/ProjectDetail';
+import BOMDetail from '@/pages/BOMDetail';
 import QuoteBuilder from '@/pages/QuoteBuilder';
 import ChangeOrder from '@/pages/ChangeOrder';
 import Invoice from '@/pages/Invoice';
@@ -40,6 +41,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ProjectDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id/boms/:bomId"
+        element={
+          <ProtectedRoute>
+            <BOMDetail />
           </ProtectedRoute>
         }
       />
@@ -88,6 +97,31 @@ function App() {
         element={
           <ProtectedRoute>
             <SalesOrder />
+          </ProtectedRoute>
+        }
+      />
+      {/* Placeholder routes for sidebar links */}
+      <Route
+        path="/dashboard/members"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/settings"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/billing"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
           </ProtectedRoute>
         }
       />

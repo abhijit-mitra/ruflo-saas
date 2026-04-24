@@ -225,3 +225,77 @@ export interface CreateSalesOrderRequest {
   taxRate?: number;
   notes?: string;
 }
+
+// File Management
+export interface ProjectFolder {
+  id: string;
+  projectId: string;
+  parentId: string | null;
+  name: string;
+  createdAt: string;
+  children?: ProjectFolder[];
+  fileCount?: number;
+}
+
+export interface ProjectFile {
+  id: string;
+  projectId: string;
+  folderId: string | null;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  uploadedBy?: { name: string };
+}
+
+// BOM
+export interface BillOfMaterials {
+  id: string;
+  projectId: string;
+  name: string;
+  bomNumber: string;
+  branchLocation?: string;
+  isPrimary: boolean;
+  priority: 'primary' | 'secondary';
+  primaryCompany?: string;
+  primaryContact?: string;
+  outsideSales?: string;
+  sourceFileId?: string;
+  status: 'draft' | 'active' | 'finalized';
+  productCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BOMProduct {
+  id: string;
+  bomId: string;
+  type: string;
+  manufacturer: string;
+  modelNumber: string;
+  quantity: number;
+  description: string;
+  cost: number;
+  discount: number;
+  margin: number;
+  sortOrder: number;
+}
+
+export interface BOMSecondaryCustomer {
+  id: string;
+  company: string;
+  contact?: string;
+}
+
+export interface CreateBOMRequest {
+  name: string;
+  branchLocation?: string;
+  opportunityId?: string;
+  isPrimary?: boolean;
+  priority?: 'primary' | 'secondary';
+  primaryCompany?: string;
+  primaryContact?: string;
+  outsideSales?: string;
+  secondaryCustomers?: { company: string; contact?: string }[];
+}
