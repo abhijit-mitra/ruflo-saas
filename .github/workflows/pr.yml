@@ -73,7 +73,7 @@ jobs:
 
       - name: Setup Terraform
         if: steps.infra-changes.outputs.changed == 'true'
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
 
       - name: Terraform plan
         id: terraform-plan
